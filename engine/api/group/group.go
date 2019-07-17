@@ -1,6 +1,7 @@
 package group
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -26,53 +27,6 @@ func DeleteGroupAndDependencies(db gorp.SqlExecutor, group *sdk.Group) error {
 	// TODO EVENT Send event for all dependencies
 
 	return nil
-}
-
-// AddGroup creates a new group in database
-func AddGroup(db gorp.SqlExecutor, group *sdk.Group) (int64, bool, error) {
-	// check projectKey pattern
-	regexp := sdk.NamePatternRegex
-	if !regexp.MatchString(group.Name) {
-		return 0, false, sdk.WrapError(sdk.ErrInvalidGroupPattern, "AddGroup: Wrong pattern for group name: %s", group.Name)
-	}
-
-	// Check that group does not already exists
-	query := `SELECT id FROM "group" WHERE "group".name = $1`
-	rows, errq := db.Query(query, group.Name)
-	if errq != nil {
-		return 0, false, sdk.WrapError(errq, "AddGroup: Cannot check if group %s exists", group.Name)
-	}
-	defer rows.Close()
-
-	if rows.Next() {
-		var groupID int64
-		if err := rows.Scan(&groupID); err != nil {
-			return 0, false, sdk.WrapError(sdk.ErrGroupExists, "AddGroup: Cannot get the ID of the existing group %s (%s)", group.Name, err)
-		}
-		return groupID, false, sdk.WrapError(sdk.ErrGroupExists, "AddGroup: Group %s already exists", group.Name)
-	}
-
-	if err := InsertGroup(db, group); err != nil {
-		return 0, false, sdk.WrapError(err, "AddGroup: Cannot insert group")
-	}
-	return group.ID, true, nil
-}
-
-// CheckUserInGroup verivies that user is in given group
-func CheckUserInGroup(db gorp.SqlExecutor, groupID, userID int64) (bool, error) {
-	query := `SELECT COUNT(user_id) FROM group_user WHERE group_id = $1 AND user_id = $2`
-
-	var nb int64
-	err := db.QueryRow(query, groupID, userID).Scan(&nb)
-	if err != nil {
-		return false, err
-	}
-
-	if nb == 1 {
-		return true, nil
-	}
-
-	return false, nil
 }
 
 // DeleteUserFromGroup remove user from group
@@ -101,24 +55,24 @@ func DeleteUserFromGroup(db gorp.SqlExecutor, groupID, userID int64) error {
 	return err
 }
 
-// InsertUserInGroup insert user in group
-func InsertUserInGroup(db gorp.SqlExecutor, groupID, userID int64, admin bool) error {
-	query := `INSERT INTO group_user (group_id,user_id,group_admin) VALUES($1,$2,$3)`
-	_, err := db.Exec(query, groupID, userID, admin)
-	return err
-}
-
 // CheckUserInDefaultGroup insert user in default group
-func CheckUserInDefaultGroup(db gorp.SqlExecutor, userID int64) error {
-	if DefaultGroup != nil && DefaultGroup.ID != 0 {
-		inGroup, err := CheckUserInGroup(db, DefaultGroup.ID, userID)
-		if err != nil {
-			return err
-		}
-		if !inGroup {
-			return InsertUserInGroup(db, DefaultGroup.ID, userID, false)
-		}
+func CheckUserInDefaultGroup(ctx context.Context, db gorp.SqlExecutor, userID int64) error {
+	if DefaultGroup == nil || DefaultGroup.ID == 0 {
+		return nil
 	}
+
+	inGroup, err := CheckUserInGroup(ctx, db, DefaultGroup.ID, userID)
+	if err != nil {
+		return err
+	}
+	if !inGroup {
+		return InsertLinkGroupUser(db, &LinkGroupUser{
+			GroupID: DefaultGroup.ID,
+			UserID:  userID,
+			Admin:   false,
+		})
+	}
+
 	return nil
 }
 
@@ -143,18 +97,6 @@ func UpdateGroup(db gorp.SqlExecutor, g *sdk.Group, oldName string) error {
 		return sdk.ErrGroupExists
 	}
 
-	return err
-}
-
-// InsertGroup insert given group into given database
-func InsertGroup(db gorp.SqlExecutor, g *sdk.Group) error {
-	rx := sdk.NamePatternRegex
-	if !rx.MatchString(g.Name) {
-		return sdk.NewError(sdk.ErrInvalidName, fmt.Errorf("Invalid group name. It should match %s", sdk.NamePattern))
-	}
-
-	query := `INSERT INTO "group" (name) VALUES($1) RETURNING id`
-	err := db.QueryRow(query, g.Name).Scan(&g.ID)
 	return err
 }
 
@@ -191,27 +133,6 @@ func deleteGroup(db gorp.SqlExecutor, g *sdk.Group) error {
 	query := `DELETE FROM "group" WHERE id=$1`
 	_, err := db.Exec(query, g.ID)
 	return err
-}
-
-// SetUserGroupAdmin allows a user to perform operations on given group
-func SetUserGroupAdmin(db gorp.SqlExecutor, groupID int64, userID int64) error {
-	query := `UPDATE "group_user" SET group_admin = true WHERE group_id = $1 AND user_id = $2`
-
-	res, errE := db.Exec(query, groupID, userID)
-	if errE != nil {
-		return errE
-	}
-
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	if rowsAffected != 1 {
-		return fmt.Errorf("cannot set user %d group admin of %d", userID, groupID)
-	}
-
-	return nil
 }
 
 // RemoveUserGroupAdmin remove the privilege to perform operations on given group

@@ -103,36 +103,11 @@ func LoadByID(ctx context.Context, db gorp.SqlExecutor, id int64, opts ...LoadOp
 	return get(ctx, db, query, opts...)
 }
 
-// LoadLinksGroupUserForGroupIDs xreturns data from group_user table for given group ids.
-func LoadLinksGroupUserForGroupIDs(ctx context.Context, db gorp.SqlExecutor, groupIDs []int64) (LinksGroupUser, error) {
-	ls := []LinkGroupUser{}
-
-	query := gorpmapping.NewQuery(`
-		SELECT *
-		FROM group_user
-		WHERE group_id = ANY(string_to_array($1, ',')::int[])
-	`).Args(gorpmapping.IDsToQueryString(groupIDs))
-
-	if err := gorpmapping.GetAll(ctx, db, query, &ls); err != nil {
-		return nil, sdk.WrapError(err, "cannot get links between group and user")
+// Insert given group into database.
+func Insert(db gorp.SqlExecutor, g *sdk.Group) error {
+	rx := sdk.NamePatternRegex
+	if !rx.MatchString(g.Name) {
+		return sdk.NewErrorFrom(sdk.ErrInvalidName, "invalid group name, should match %s", sdk.NamePattern)
 	}
-
-	return ls, nil
-}
-
-// LoadLinksGroupUserForUserIDs returns data from group_user table for given user ids.
-func LoadLinksGroupUserForUserIDs(ctx context.Context, db gorp.SqlExecutor, userIDs []int64) (LinksGroupUser, error) {
-	ls := []LinkGroupUser{}
-
-	query := gorpmapping.NewQuery(`
-		SELECT *
-		FROM group_user
-		WHERE user_id = ANY(string_to_array($1, ',')::int[])
-	`).Args(gorpmapping.IDsToQueryString(userIDs))
-
-	if err := gorpmapping.GetAll(ctx, db, query, &ls); err != nil {
-		return nil, sdk.WrapError(err, "cannot get links between group and user")
-	}
-
-	return ls, nil
+	return sdk.WrapError(gorpmapping.Insert(db, g), "unable to insert group %s", g.Name)
 }

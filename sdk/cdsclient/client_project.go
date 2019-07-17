@@ -10,11 +10,9 @@ import (
 	"github.com/ovh/cds/sdk"
 )
 
-func (c *client) ProjectCreate(p *sdk.Project, groupName string) error {
-	if _, err := c.PostJSON(context.Background(), "/project", p, nil); err != nil {
-		return err
-	}
-	return nil
+func (c *client) ProjectCreate(p *sdk.Project) error {
+	_, err := c.PostJSON(context.Background(), "/project", p, nil)
+	return err
 }
 
 func (c *client) ProjectDelete(key string) error {
