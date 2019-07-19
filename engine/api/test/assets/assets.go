@@ -66,7 +66,11 @@ func InsertTestProject(t *testing.T, db *gorp.DbMap, store cache.Store, key, nam
 		return nil
 	}
 
-	if err := group.InsertGroupInProject(db, proj.ID, g.ID, sdk.PermissionReadWriteExecute); err != nil {
+	if err := group.InsertLinkGroupProject(db, &group.LinkGroupProject{
+		GroupID:   g.ID,
+		ProjectID: proj.ID,
+		Role:      sdk.PermissionReadWriteExecute,
+	}); err != nil {
 		t.Fatalf("Cannot insert permission : %s", err)
 		return nil
 	}
@@ -94,7 +98,7 @@ func InsertTestGroup(t *testing.T, db *gorp.DbMap, name string) *sdk.Group {
 	eg, _ := group.LoadByName(context.TODO(), db, g.Name)
 	if eg != nil {
 		g = *eg
-	} else if err := group.InsertGroup(db, &g); err != nil {
+	} else if err := group.Insert(db, &g); err != nil {
 		t.Fatalf("Cannot insert group : %s", err)
 		return nil
 	}
@@ -105,7 +109,7 @@ func InsertTestGroup(t *testing.T, db *gorp.DbMap, name string) *sdk.Group {
 // DeleteTestGroup delete a test group.
 func DeleteTestGroup(t *testing.T, db gorp.SqlExecutor, g *sdk.Group) error {
 	t.Logf("Delete Group %s", g.Name)
-	return group.DeleteGroupAndDependencies(db, g)
+	return group.Delete(context.TODO(), db, g)
 }
 
 // InsertAdminUser have to be used only for tests
@@ -161,12 +165,15 @@ func InsertLambdaUser(db gorp.SqlExecutor, groups ...*sdk.Group) (*sdk.Authentif
 	}
 
 	for _, g := range groups {
-		if err := group.InsertGroup(db, g); err != nil {
+		if err := group.Insert(db, g); err != nil {
 			log.Error("unable to insert group: %v", err)
 		}
-		if err := group.InsertUserInGroup(db, g.ID, u.OldUserStruct.ID, false); err != nil {
+		if err := group.InsertLinkGroupUser(db, &group.LinkGroupUser{
+			GroupID: g.ID,
+			UserID:  u.OldUserStruct.ID,
+			Admin:   false,
+		}); err != nil {
 			log.Error("unable to insert user in group: %v", err)
-
 		}
 		u.OldUserStruct.Groups = append(u.OldUserStruct.Groups, *g)
 	}
@@ -363,12 +370,12 @@ func InsertGroup(t *testing.T, db gorp.SqlExecutor) *sdk.Group {
 			workermodel.Delete(db, m.ID)
 		}
 
-		if err := group.DeleteGroupAndDependencies(db, g1); err != nil {
+		if err := group.Delete(context.TODO(), db, g1); err != nil {
 			t.Logf("unable to delete group: %v", err)
 		}
 	}
 
-	if err := group.InsertGroup(db, g); err != nil {
+	if err := group.Insert(db, g); err != nil {
 		t.Fatalf("Unable to create group %s", err)
 	}
 

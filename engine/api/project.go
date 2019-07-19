@@ -479,7 +479,11 @@ func (api *API) postProjectHandler() service.Handler {
 
 		// Insert all links between project and group
 		for _, groupID := range groupIDs {
-			if err := group.InsertGroupInProject(tx, p.ID, groupID, sdk.PermissionReadWriteExecute); err != nil {
+			if err := group.InsertLinkGroupProject(tx, &group.LinkGroupProject{
+				GroupID:   groupID,
+				ProjectID: p.ID,
+				Role:      sdk.PermissionReadWriteExecute,
+			}); err != nil {
 				return sdk.WrapError(err, "cannot add group %d in project %s", groupID, p.Name)
 			}
 		}

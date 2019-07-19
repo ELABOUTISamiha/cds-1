@@ -12,6 +12,14 @@ const (
 	PermissionReadWriteExecute = 7
 )
 
+func IsValidPermissionValue(v int) bool {
+	switch v {
+	case PermissionRead, PermissionReadExecute, PermissionReadWriteExecute:
+		return true
+	}
+	return false
+}
+
 // Group represent a group of user.
 type Group struct {
 	ID   int64  `json:"id" yaml:"-" db:"id"`
@@ -56,6 +64,17 @@ func (g Groups) ToMap() map[int64]Group {
 type GroupPermission struct {
 	Group      Group `json:"group"`
 	Permission int   `json:"permission"`
+}
+
+// IsValid returns an error if group permission is not valid.
+func (g GroupPermission) IsValid() error {
+	if g.Group.Name == "" {
+		return NewErrorFrom(ErrWrongRequest, "invalid given group name for permission")
+	}
+	if !IsValidPermissionValue(g.Permission) {
+		return NewErrorFrom(ErrWrongRequest, "invalid given permission value")
+	}
+	return nil
 }
 
 // ProjectGroup represent a link with a project

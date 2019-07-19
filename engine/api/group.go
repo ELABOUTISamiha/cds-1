@@ -89,6 +89,10 @@ func (api *API) postGroupHandler() service.Handler {
 			return sdk.WrapError(err, "cannot commit tx")
 		}
 
+		if err := group.LoadOptions.WithMembers(ctx, api.mustDB(), newGroup); err != nil {
+			return err
+		}
+
 		return service.WriteJSON(w, newGroup, http.StatusCreated)
 	}
 }
@@ -99,7 +103,13 @@ func (api *API) deleteGroupHandler() service.Handler {
 		name := vars["permGroupName"]
 		u := getAPIConsumer(ctx)
 
-		g, err := group.LoadByName(ctx, api.mustDB(), name)
+		tx, err := api.mustDB().Begin()
+		if err != nil {
+			return sdk.WrapError(err, "cannot start transaction")
+		}
+		defer tx.Rollback()
+
+		g, err := group.LoadByName(ctx, tx, name)
 		if err != nil {
 			return sdk.WrapError(err, "cannot load %s", name)
 		}
@@ -109,13 +119,7 @@ func (api *API) deleteGroupHandler() service.Handler {
 			return sdk.WrapError(err, "cannot load projects for group")
 		}
 
-		tx, errb := api.mustDB().Begin()
-		if errb != nil {
-			return sdk.WrapError(errb, "cannot start transaction")
-		}
-		defer tx.Rollback()
-
-		if err := group.DeleteGroupAndDependencies(tx, g); err != nil {
+		if err := group.Delete(ctx, tx, g); err != nil {
 			return sdk.WrapError(err, "cannot delete group")
 		}
 
@@ -170,9 +174,9 @@ func (api *API) updateGroupHandler() service.Handler {
 			return sdk.WrapError(err, "Cannot update group %s", oldName)
 		}
 
-		if err := group.DeleteGroupUserByGroup(tx, &updatedGroup); err != nil {
-			return sdk.WrapError(err, "Cannot delete users in group %s", oldName)
-		}
+		//if err := group.DeleteGroupUserByGroup(tx, &updatedGroup); err != nil {
+		//	return sdk.WrapError(err, "Cannot delete users in group %s", oldName)
+		//}
 
 		/*for _, a := range updatedGroup.Admins {
 			u, err := user.LoadByUsername(ctx, tx, a.Username, user.LoadOptions.WithDeprecatedUser)

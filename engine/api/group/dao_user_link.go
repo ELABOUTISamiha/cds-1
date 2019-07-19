@@ -9,7 +9,7 @@ import (
 	"github.com/ovh/cds/sdk"
 )
 
-// LoadLinksGroupUserForGroupIDs xreturns data from group_user table for given group ids.
+// LoadLinksGroupUserForGroupIDs returns data from group_user table for given group ids.
 func LoadLinksGroupUserForGroupIDs(ctx context.Context, db gorp.SqlExecutor, groupIDs []int64) (LinksGroupUser, error) {
 	ls := []LinkGroupUser{}
 

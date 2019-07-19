@@ -111,3 +111,8 @@ func Insert(db gorp.SqlExecutor, g *sdk.Group) error {
 	}
 	return sdk.WrapError(gorpmapping.Insert(db, g), "unable to insert group %s", g.Name)
 }
+
+// delete given group from database.
+func deleteDB(db gorp.SqlExecutor, g *sdk.Group) error {
+	return sdk.WrapError(gorpmapping.Delete(db, g), "unable to delete group %s", g.Name)
+}

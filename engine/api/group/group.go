@@ -10,25 +10,6 @@ import (
 	"github.com/ovh/cds/sdk"
 )
 
-// DeleteGroupAndDependencies deletes group and all subsequent group_project, pipeline_project
-func DeleteGroupAndDependencies(db gorp.SqlExecutor, group *sdk.Group) error {
-	if err := DeleteGroupUserByGroup(db, group); err != nil {
-		return sdk.WrapError(err, "deleteGroupAndDependencies: Cannot delete group user %s", group.Name)
-	}
-
-	if err := deleteGroupProjectByGroup(db, group); err != nil {
-		return sdk.WrapError(err, "deleteGroupAndDependencies: Cannot delete group project %s", group.Name)
-	}
-
-	if err := deleteGroup(db, group); err != nil {
-		return sdk.WrapError(err, "deleteGroupAndDependencies: Cannot delete group %s", group.Name)
-	}
-
-	// TODO EVENT Send event for all dependencies
-
-	return nil
-}
-
 // DeleteUserFromGroup remove user from group
 func DeleteUserFromGroup(db gorp.SqlExecutor, groupID, userID int64) error {
 	// Check if there are admin left
@@ -74,13 +55,6 @@ func CheckUserInDefaultGroup(ctx context.Context, db gorp.SqlExecutor, userID in
 	}
 
 	return nil
-}
-
-// DeleteGroupUserByGroup Delete all user from a group
-func DeleteGroupUserByGroup(db gorp.SqlExecutor, group *sdk.Group) error {
-	query := `DELETE FROM group_user WHERE group_id=$1`
-	_, err := db.Exec(query, group.ID)
-	return err
 }
 
 // UpdateGroup updates group informations in database
@@ -129,15 +103,9 @@ func LoadGroupByProject(db gorp.SqlExecutor, project *sdk.Project) error {
 	return nil
 }
 
-func deleteGroup(db gorp.SqlExecutor, g *sdk.Group) error {
-	query := `DELETE FROM "group" WHERE id=$1`
-	_, err := db.Exec(query, g.ID)
-	return err
-}
-
 // RemoveUserGroupAdmin remove the privilege to perform operations on given group
 func RemoveUserGroupAdmin(db gorp.SqlExecutor, groupID int64, userID int64) error {
 	query := `UPDATE "group_user" SET group_admin = false WHERE group_id = $1 AND user_id = $2`
 	_, err := db.Exec(query, groupID, userID)
-	return err
+	return sdk.WithStack(err)
 }

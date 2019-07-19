@@ -201,7 +201,6 @@ type ProjectClient interface {
 	ProjectList(withApplications, withWorkflow bool, filters ...Filter) ([]sdk.Project, error)
 	ProjectKeysClient
 	ProjectVariablesClient
-	ProjectGroupsImport(projectKey string, content io.Reader, format string, force bool) (sdk.Project, error)
 	ProjectIntegrationImport(projectKey string, content io.Reader, format string, force bool) (sdk.ProjectIntegration, error)
 	ProjectIntegrationGet(projectKey string, integrationName string, clearPassword bool) (sdk.ProjectIntegration, error)
 	ProjectIntegrationList(projectKey string) ([]sdk.ProjectIntegration, error)
