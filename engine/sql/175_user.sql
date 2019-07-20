@@ -105,11 +105,11 @@ ALTER TABLE worker alter column model_id DROP NOT NULL;
 ALTER TABLE project_group DROP CONSTRAINT IF EXISTS "fk_project_group_pipeline";
 SELECT create_foreign_key_idx_cascade('FK_PROJECT_GROUP_PIPELINE', 'project_group', 'project', 'project_id', 'id');
 ALTER TABLE group_user DROP CONSTRAINT IF EXISTS "fk_group_user_user";
-SELECT create_foreign_key_idx_cascade('FK_HROUP_USER_USER', 'group_user', 'user_id', 'user', 'id');
+SELECT create_foreign_key_idx_cascade('FK_GROUP_USER_USER', 'group_user', 'user', 'user_id', 'id');
 ALTER TABLE workflow_template DROP CONSTRAINT IF EXISTS "fk_workflow_template_group";
-SELECT create_foreign_key('FK_WORKFLOW_TEMPLATE_GROUP', 'workflow_template', 'group_id', 'group', 'id');
+SELECT create_foreign_key('FK_WORKFLOW_TEMPLATE_GROUP', 'workflow_template', 'group', 'group_id', 'id');
 ALTER TABLE "action" DROP CONSTRAINT IF EXISTS "fk_action_group";
-SELECT create_foreign_key('FK_ACTION_GROUP', 'action', 'group_id', 'group', 'id');
+SELECT create_foreign_key('FK_ACTION_GROUP', 'action', 'group', 'group_id', 'id');
 
 -- TODO DELETE CASCADE access_token when worker is removed
 

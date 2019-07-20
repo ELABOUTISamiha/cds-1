@@ -165,8 +165,11 @@ func InsertLambdaUser(db gorp.SqlExecutor, groups ...*sdk.Group) (*sdk.Authentif
 	}
 
 	for _, g := range groups {
-		if err := group.Insert(db, g); err != nil {
-			log.Error("unable to insert group: %v", err)
+		existingGroup, _ := group.LoadByName(context.TODO(), db, g.Name)
+		if existingGroup == nil {
+			if err := group.Insert(db, g); err != nil {
+				log.Error("unable to insert group: %v", err)
+			}
 		}
 		if err := group.InsertLinkGroupUser(db, &group.LinkGroupUser{
 			GroupID: g.ID,

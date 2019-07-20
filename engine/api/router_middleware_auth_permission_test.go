@@ -78,7 +78,11 @@ func TestAPI_checkProjectPermissions(t *testing.T) {
 
 	p := assets.InsertTestProject(t, api.mustDB(), api.Cache, sdk.RandomString(10), sdk.RandomString(10), authUser)
 
-	require.NoError(t, group.InsertUserInGroup(api.mustDB(), p.ProjectGroups[0].Group.ID, authUser.OldUserStruct.ID, false))
+	require.NoError(t, group.InsertLinkGroupUser(api.mustDB(), &group.LinkGroupUser{
+		GroupID: p.ProjectGroups[0].Group.ID,
+		UserID:  authUser.OldUserStruct.ID,
+		Admin:   false,
+	}))
 
 	// Reload the groups for the user
 	groups, err := group.LoadAllByDeprecatedUserID(context.TODO(), api.mustDB(), authUser.OldUserStruct.ID)
@@ -496,14 +500,18 @@ func Test_checkWorkflowPermissionsByUser(t *testing.T) {
 			g, err := group.LoadByName(context.TODO(), api.mustDB(), groupName+suffix, group.LoadOptions.WithMembers)
 			require.NoError(t, err)
 
-			require.NoError(t, group.InsertGroupInProject(api.mustDB(), proj.ID, g.ID, permLevel))
+			require.NoError(t, group.InsertLinkGroupProject(api.mustDB(), &group.LinkGroupProject{
+				GroupID:   g.ID,
+				ProjectID: proj.ID,
+				Role:      permLevel,
+			}))
 		}
 
 		for groupName, permLevel := range tt.setup.WorkflowGroupPermissions {
 			g, err := group.LoadByName(context.TODO(), api.mustDB(), groupName+suffix, group.LoadOptions.WithMembers)
 			require.NoError(t, err)
 
-			require.NoError(t, group.AddWorkflowGroup(api.mustDB(), wrkflw, sdk.GroupPermission{
+			require.NoError(t, group.AddWorkflowGroup(context.TODO(), api.mustDB(), wrkflw, sdk.GroupPermission{
 				Group:      *g,
 				Permission: permLevel,
 			}))

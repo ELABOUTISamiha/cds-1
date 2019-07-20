@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/ovh/cds/engine/api/application"
 	"github.com/ovh/cds/engine/api/group"
@@ -28,7 +29,11 @@ func Test_getWorkflowHookModelsHandlerAsLambdaUser(t *testing.T) {
 	u, passUser := assets.InsertLambdaUser(api.mustDB())
 
 	proj := assets.InsertTestProject(t, db, cache, sdk.RandomString(10), sdk.RandomString(10), u)
-	test.NoError(t, group.InsertUserInGroup(db, proj.ProjectGroups[0].Group.ID, u.OldUserStruct.ID, true))
+	require.NoError(t, group.InsertLinkGroupUser(db, &group.LinkGroupUser{
+		GroupID: proj.ProjectGroups[0].Group.ID,
+		UserID:  u.OldUserStruct.ID,
+		Admin:   true,
+	}))
 
 	pip := sdk.Pipeline{
 		ProjectID:  proj.ID,

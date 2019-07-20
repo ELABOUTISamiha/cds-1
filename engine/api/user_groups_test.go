@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -23,7 +24,7 @@ func Test_getUserGroupsHandler(t *testing.T) {
 	g2 := assets.InsertGroup(t, db)
 
 	u, jwtRaw := assets.InsertLambdaUser(db, g1, g2)
-	require.NoError(t, group.SetUserGroupAdmin(db, g2.ID, u.OldUserStruct.ID))
+	require.NoError(t, group.SetUserGroupAdmin(context.TODO(), db, g2.ID, u.OldUserStruct.ID))
 
 	uri := api.Router.GetRoute(http.MethodGet, api.getUserGroupsHandler, map[string]string{
 		"permUsername": u.Username,

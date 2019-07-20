@@ -56,7 +56,7 @@ func deleteAll(t *testing.T, api *API, key string) error {
 	}
 
 	for _, g := range proj.ProjectGroups {
-		if err := group.DeleteGroupAndDependencies(api.mustDB(), &g.Group); err != nil {
+		if err := group.Delete(context.TODO(), api.mustDB(), &g.Group); err != nil {
 			return err
 		}
 	}

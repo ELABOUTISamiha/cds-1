@@ -116,7 +116,7 @@ func Test_addProjectHandler(t *testing.T) {
 	jsonBody, _ := json.Marshal(proj)
 	body := bytes.NewBuffer(jsonBody)
 
-	uri := api.Router.GetRoute("POST", api.addProjectHandler, nil)
+	uri := api.Router.GetRoute("POST", api.postProjectHandler, nil)
 	req, err := http.NewRequest("POST", uri, body)
 	test.NoError(t, err)
 	assets.AuthentifyRequest(t, req, u, pass)
@@ -140,7 +140,7 @@ func Test_addProjectHandlerWithGroup(t *testing.T) {
 	defer end()
 	u, pass := assets.InsertAdminUser(db)
 	g := sdk.Group{Name: sdk.RandomString(10)}
-	test.NoError(t, group.InsertGroup(db, &g))
+	test.NoError(t, group.Insert(db, &g))
 
 	proj := sdk.Project{
 		Key:  strings.ToUpper(sdk.RandomString(10)),
@@ -153,7 +153,7 @@ func Test_addProjectHandlerWithGroup(t *testing.T) {
 	jsonBody, _ := json.Marshal(proj)
 	body := bytes.NewBuffer(jsonBody)
 
-	uri := api.Router.GetRoute("POST", api.addProjectHandler, nil)
+	uri := api.Router.GetRoute("POST", api.postProjectHandler, nil)
 	req, err := http.NewRequest("POST", uri, body)
 	test.NoError(t, err)
 	assets.AuthentifyRequest(t, req, u, pass)
@@ -201,7 +201,11 @@ func Test_getProjectsHandler_WithWPermissionShouldReturnOneProject(t *testing.T)
 	defer end()
 	u, pass := assets.InsertLambdaUser(api.mustDB())
 	proj := assets.InsertTestProject(t, db, api.Cache, sdk.RandomString(10), sdk.RandomString(10), u)
-	test.NoError(t, group.InsertUserInGroup(db, proj.ProjectGroups[0].Group.ID, u.OldUserStruct.ID, true))
+	require.NoError(t, group.InsertLinkGroupUser(api.mustDB(), &group.LinkGroupUser{
+		GroupID: proj.ProjectGroups[0].Group.ID,
+		UserID:  u.OldUserStruct.ID,
+		Admin:   true,
+	}))
 
 	vars := map[string]string{}
 	uri := api.Router.GetRoute("GET", api.getProjectsHandler, vars)
@@ -234,7 +238,11 @@ func Test_getprojectsHandler_AsProvider(t *testing.T) {
 	u, _ := assets.InsertLambdaUser(api.mustDB())
 	pkey := sdk.RandomString(10)
 	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, pkey, pkey, u)
-	test.NoError(t, group.InsertUserInGroup(api.mustDB(), proj.ProjectGroups[0].Group.ID, u.OldUserStruct.ID, true))
+	require.NoError(t, group.InsertLinkGroupUser(api.mustDB(), &group.LinkGroupUser{
+		GroupID: proj.ProjectGroups[0].Group.ID,
+		UserID:  u.OldUserStruct.ID,
+		Admin:   true,
+	}))
 
 	sdkclient := cdsclient.NewProviderClient(cdsclient.ProviderConfig{
 		Host:  tsURL,
@@ -260,7 +268,11 @@ func Test_getprojectsHandler_AsProviderWithRequestedUsername(t *testing.T) {
 
 	pkey := sdk.RandomString(10)
 	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, pkey, pkey, u)
-	test.NoError(t, group.InsertUserInGroup(api.mustDB(), proj.ProjectGroups[0].Group.ID, u.OldUserStruct.ID, true))
+	require.NoError(t, group.InsertLinkGroupUser(api.mustDB(), &group.LinkGroupUser{
+		GroupID: proj.ProjectGroups[0].Group.ID,
+		UserID:  u.OldUserStruct.ID,
+		Admin:   true,
+	}))
 
 	app := &sdk.Application{
 		Name: sdk.RandomString(10),
@@ -288,7 +300,11 @@ func Test_putProjectLabelsHandler(t *testing.T) {
 
 	pkey := sdk.RandomString(10)
 	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, pkey, pkey, u)
-	test.NoError(t, group.InsertUserInGroup(api.mustDB(), proj.ProjectGroups[0].Group.ID, u.OldUserStruct.ID, true))
+	require.NoError(t, group.InsertLinkGroupUser(api.mustDB(), &group.LinkGroupUser{
+		GroupID: proj.ProjectGroups[0].Group.ID,
+		UserID:  u.OldUserStruct.ID,
+		Admin:   true,
+	}))
 
 	lbl1 := sdk.Label{
 		Name:      sdk.RandomString(5),

@@ -7,6 +7,7 @@ import (
 
 	"github.com/fatih/structs"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/ovh/cds/engine/api/bootstrap"
 	"github.com/ovh/cds/engine/api/group"
@@ -34,7 +35,7 @@ func TestMissingProjectPermissionWorkflowWarning(t *testing.T) {
 	g := sdk.Group{
 		Name: sdk.RandomString(10),
 	}
-	assert.NoError(t, group.InsertGroup(db, &g))
+	assert.NoError(t, group.Insert(db, &g))
 
 	// Project KEY to test Event
 	gp := sdk.GroupPermission{
@@ -62,8 +63,12 @@ func TestMissingProjectPermissionWorkflowWarning(t *testing.T) {
 	projUpdate, err := project.Load(db, cache, proj.Key, project.LoadOptions.WithPipelines)
 	assert.NoError(t, err)
 	test.NoError(t, workflow.Insert(context.TODO(), db, cache, &w, projUpdate))
-	test.NoError(t, group.InsertGroupInProject(db, proj.ID, gp.Group.ID, 7))
-	test.NoError(t, group.AddWorkflowGroup(db, &w, gp))
+	require.NoError(t, group.InsertLinkGroupProject(db, &group.LinkGroupProject{
+		GroupID:   gp.Group.ID,
+		ProjectID: proj.ID,
+		Role:      sdk.PermissionReadWriteExecute,
+	}))
+	test.NoError(t, group.AddWorkflowGroup(context.TODO(), db, &w, gp))
 
 	// Create delete key event
 	ePayload := sdk.EventProjectPermissionDelete{
