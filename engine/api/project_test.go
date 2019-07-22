@@ -30,7 +30,7 @@ func TestVariableInProject(t *testing.T) {
 	defer end()
 
 	// 1. Create project
-	project1 := assets.InsertTestProject(t, db, api.Cache, sdk.RandomString(10), sdk.RandomString(10), nil)
+	project1 := assets.InsertTestProject(t, db, api.Cache, sdk.RandomString(10), sdk.RandomString(10))
 
 	// 2. Insert new variable
 	var1 := &sdk.Variable{
@@ -77,7 +77,7 @@ func TestVariableInProject(t *testing.T) {
 func Test_getProjectsHandler(t *testing.T) {
 	api, db, _, end := newTestAPI(t, bootstrap.InitiliazeDB)
 	defer end()
-	proj := assets.InsertTestProject(t, db, api.Cache, sdk.RandomString(10), sdk.RandomString(10), nil)
+	proj := assets.InsertTestProject(t, db, api.Cache, sdk.RandomString(10), sdk.RandomString(10))
 	repofullname := sdk.RandomString(10) + "/" + sdk.RandomString(10)
 	app := &sdk.Application{
 		Name:               "app",
@@ -138,9 +138,10 @@ func Test_addProjectHandler(t *testing.T) {
 func Test_addProjectHandlerWithGroup(t *testing.T) {
 	api, db, _, end := newTestAPI(t, bootstrap.InitiliazeDB)
 	defer end()
+
 	u, pass := assets.InsertAdminUser(db)
 	g := sdk.Group{Name: sdk.RandomString(10)}
-	test.NoError(t, group.Insert(db, &g))
+	require.NoError(t, group.Insert(db, &g))
 
 	proj := sdk.Project{
 		Key:  strings.ToUpper(sdk.RandomString(10)),
@@ -155,7 +156,7 @@ func Test_addProjectHandlerWithGroup(t *testing.T) {
 
 	uri := api.Router.GetRoute("POST", api.postProjectHandler, nil)
 	req, err := http.NewRequest("POST", uri, body)
-	test.NoError(t, err)
+	require.NoError(t, err)
 	assets.AuthentifyRequest(t, req, u, pass)
 
 	// Do the request
@@ -163,19 +164,18 @@ func Test_addProjectHandlerWithGroup(t *testing.T) {
 	api.Router.Mux.ServeHTTP(w, req)
 	assert.Equal(t, 201, w.Code)
 
-	projCreated := sdk.Project{}
-	test.NoError(t, json.Unmarshal(w.Body.Bytes(), &projCreated))
+	var projCreated sdk.Project
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &projCreated))
 	assert.Equal(t, proj.Key, projCreated.Key)
 
-	gr, err := group.LoadByName(context.TODO(), db, proj.Name)
-	assert.Nil(t, gr)
-	assert.Error(t, err)
+	_, err = group.LoadByName(context.TODO(), db, proj.Name)
+	assert.True(t, sdk.ErrorIs(err, sdk.ErrNotFound), "no group should have been created")
 }
 
 func Test_getProjectsHandler_WithWPermissionShouldReturnNoProjects(t *testing.T) {
 	api, db, _, end := newTestAPI(t, bootstrap.InitiliazeDB)
 	defer end()
-	assets.InsertTestProject(t, db, api.Cache, sdk.RandomString(10), sdk.RandomString(10), nil)
+	assets.InsertTestProject(t, db, api.Cache, sdk.RandomString(10), sdk.RandomString(10))
 
 	u, pass := assets.InsertLambdaUser(api.mustDB())
 
@@ -200,7 +200,7 @@ func Test_getProjectsHandler_WithWPermissionShouldReturnOneProject(t *testing.T)
 	api, db, _, end := newTestAPI(t, bootstrap.InitiliazeDB)
 	defer end()
 	u, pass := assets.InsertLambdaUser(api.mustDB())
-	proj := assets.InsertTestProject(t, db, api.Cache, sdk.RandomString(10), sdk.RandomString(10), u)
+	proj := assets.InsertTestProject(t, db, api.Cache, sdk.RandomString(10), sdk.RandomString(10))
 	require.NoError(t, group.InsertLinkGroupUser(api.mustDB(), &group.LinkGroupUser{
 		GroupID: proj.ProjectGroups[0].Group.ID,
 		UserID:  u.OldUserStruct.ID,
@@ -237,7 +237,7 @@ func Test_getprojectsHandler_AsProvider(t *testing.T) {
 
 	u, _ := assets.InsertLambdaUser(api.mustDB())
 	pkey := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, pkey, pkey, u)
+	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, pkey, pkey)
 	require.NoError(t, group.InsertLinkGroupUser(api.mustDB(), &group.LinkGroupUser{
 		GroupID: proj.ProjectGroups[0].Group.ID,
 		UserID:  u.OldUserStruct.ID,
@@ -267,7 +267,7 @@ func Test_getprojectsHandler_AsProviderWithRequestedUsername(t *testing.T) {
 	u, _ := assets.InsertLambdaUser(api.mustDB())
 
 	pkey := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, pkey, pkey, u)
+	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, pkey, pkey)
 	require.NoError(t, group.InsertLinkGroupUser(api.mustDB(), &group.LinkGroupUser{
 		GroupID: proj.ProjectGroups[0].Group.ID,
 		UserID:  u.OldUserStruct.ID,
@@ -299,7 +299,7 @@ func Test_putProjectLabelsHandler(t *testing.T) {
 	u, pass := assets.InsertAdminUser(db)
 
 	pkey := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, pkey, pkey, u)
+	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, pkey, pkey)
 	require.NoError(t, group.InsertLinkGroupUser(api.mustDB(), &group.LinkGroupUser{
 		GroupID: proj.ProjectGroups[0].Group.ID,
 		UserID:  u.OldUserStruct.ID,

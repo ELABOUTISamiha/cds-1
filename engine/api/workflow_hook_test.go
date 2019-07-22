@@ -28,7 +28,7 @@ func Test_getWorkflowHookModelsHandlerAsLambdaUser(t *testing.T) {
 	test.NoError(t, workflow.CreateBuiltinWorkflowHookModels(api.mustDB()))
 	u, passUser := assets.InsertLambdaUser(api.mustDB())
 
-	proj := assets.InsertTestProject(t, db, cache, sdk.RandomString(10), sdk.RandomString(10), u)
+	proj := assets.InsertTestProject(t, db, cache, sdk.RandomString(10), sdk.RandomString(10))
 	require.NoError(t, group.InsertLinkGroupUser(db, &group.LinkGroupUser{
 		GroupID: proj.ProjectGroups[0].Group.ID,
 		UserID:  u.OldUserStruct.ID,
@@ -96,7 +96,7 @@ func Test_getWorkflowHookModelsHandlerAsAdminUser(t *testing.T) {
 	test.NoError(t, workflow.CreateBuiltinWorkflowHookModels(api.mustDB()))
 	admin, passAdmin := assets.InsertAdminUser(api.mustDB())
 
-	proj := assets.InsertTestProject(t, db, cache, sdk.RandomString(10), sdk.RandomString(10), admin)
+	proj := assets.InsertTestProject(t, db, cache, sdk.RandomString(10), sdk.RandomString(10))
 
 	pip := sdk.Pipeline{
 		ProjectID:  proj.ID,

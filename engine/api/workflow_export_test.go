@@ -26,7 +26,7 @@ func Test_getWorkflowExportHandler(t *testing.T) {
 	defer end()
 	u, pass := assets.InsertAdminUser(api.mustDB())
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, key, key, u)
+	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, key, key)
 	require.NoError(t, group.InsertLinkGroupUser(api.mustDB(), &group.LinkGroupUser{
 		GroupID: proj.ProjectGroups[0].Group.ID,
 		UserID:  u.OldUserStruct.ID,
@@ -154,7 +154,7 @@ func Test_getWorkflowExportHandlerWithPermissions(t *testing.T) {
 	defer end()
 	u, pass := assets.InsertAdminUser(api.mustDB())
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, key, key, u)
+	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, key, key)
 	require.NoError(t, group.InsertLinkGroupUser(api.mustDB(), &group.LinkGroupUser{
 		GroupID: proj.ProjectGroups[0].Group.ID,
 		UserID:  u.OldUserStruct.ID,
@@ -283,7 +283,7 @@ func Test_getWorkflowPullHandler(t *testing.T) {
 	defer end()
 	u, pass := assets.InsertAdminUser(api.mustDB())
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, key, key, u)
+	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, key, key)
 	require.NoError(t, group.InsertLinkGroupUser(api.mustDB(), &group.LinkGroupUser{
 		GroupID: proj.ProjectGroups[0].Group.ID,
 		UserID:  u.OldUserStruct.ID,

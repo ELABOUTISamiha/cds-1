@@ -147,7 +147,7 @@ func TestLoadByWorkflowID(t *testing.T) {
 	defer end()
 	key := sdk.RandomString(10)
 
-	proj := assets.InsertTestProject(t, db, cache, key, key, nil)
+	proj := assets.InsertTestProject(t, db, cache, key, key)
 	app := sdk.Application{
 		Name:       "my-app",
 		ProjectKey: proj.Key,
@@ -202,7 +202,7 @@ func TestLoadByWorkerModel(t *testing.T) {
 	model2 := sdk.Model{Name: sdk.RandomString(10), Group: g2, GroupID: g2.ID}
 
 	projectKey := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, db, cache, projectKey, projectKey, nil)
+	proj := assets.InsertTestProject(t, db, cache, projectKey, projectKey)
 
 	require.NoError(t, group.InsertLinkGroupProject(db, &group.LinkGroupProject{
 		GroupID:   g2.ID,

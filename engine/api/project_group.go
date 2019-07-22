@@ -223,7 +223,7 @@ func (api *API) postGroupInProjectHandler() service.Handler {
 		newGroupPermission := sdk.GroupPermission{Permission: newLink.Role, Group: *grp}
 		event.PublishAddProjectPermission(proj, newGroupPermission, getAPIConsumer(ctx))
 
-		return service.WriteJSON(w, newGroupPermission, http.StatusCreated)
+		return service.WriteJSON(w, newGroupPermission, http.StatusOK)
 	}
 }
 

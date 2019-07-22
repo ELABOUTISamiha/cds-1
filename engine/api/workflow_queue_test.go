@@ -54,7 +54,7 @@ type testRunWorkflowCtx struct {
 func testRunWorkflow(t *testing.T, api *API, router *Router) testRunWorkflowCtx {
 	u, pass := assets.InsertAdminUser(api.mustDB())
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, key, key, u)
+	proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, key, key)
 	require.NoError(t, group.InsertLinkGroupUser(api.mustDB(), &group.LinkGroupUser{
 		GroupID: proj.ProjectGroups[0].Group.ID,
 		UserID:  u.OldUserStruct.ID,
@@ -811,7 +811,7 @@ func TestPostVulnerabilityReportHandler(t *testing.T) {
 
 	// Create project
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, db, api.Cache, key, key, u)
+	proj := assets.InsertTestProject(t, db, api.Cache, key, key)
 
 	// add group
 	require.NoError(t, group.InsertLinkGroupUser(api.mustDB(), &group.LinkGroupUser{
@@ -951,7 +951,7 @@ func TestInsertNewCodeCoverageReport(t *testing.T) {
 
 	// Create project
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, db, api.Cache, key, key, u)
+	proj := assets.InsertTestProject(t, db, api.Cache, key, key)
 
 	// add group
 	require.NoError(t, group.InsertLinkGroupUser(api.mustDB(), &group.LinkGroupUser{

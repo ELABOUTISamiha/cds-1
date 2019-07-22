@@ -38,7 +38,7 @@ func TestLoadAllShouldNotReturnAnyWorkflows(t *testing.T) {
 	defer end()
 	u, _ := assets.InsertAdminUser(db)
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, db, cache, key, key, u)
+	proj := assets.InsertTestProject(t, db, cache, key, key)
 
 	proj, _ = project.LoadByID(db, cache, proj.ID, project.LoadOptions.WithApplications, project.LoadOptions.WithPipelines, project.LoadOptions.WithEnvironments, project.LoadOptions.WithGroups)
 
@@ -53,7 +53,7 @@ func TestInsertSimpleWorkflowAndExport(t *testing.T) {
 	u, _ := assets.InsertAdminUser(db)
 
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, db, cache, key, key, u)
+	proj := assets.InsertTestProject(t, db, cache, key, key)
 
 	pip := sdk.Pipeline{
 		ProjectID:  proj.ID,
@@ -116,7 +116,7 @@ func TestInsertSimpleWorkflowWithWrongName(t *testing.T) {
 	u, _ := assets.InsertAdminUser(db)
 
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, db, cache, key, key, u)
+	proj := assets.InsertTestProject(t, db, cache, key, key)
 
 	pip := sdk.Pipeline{
 		ProjectID:  proj.ID,
@@ -153,7 +153,7 @@ func TestInsertSimpleWorkflowWithApplicationAndEnv(t *testing.T) {
 
 	u, _ := assets.InsertAdminUser(db)
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, db, cache, key, key, u)
+	proj := assets.InsertTestProject(t, db, cache, key, key)
 
 	pip := sdk.Pipeline{
 		ProjectID:  proj.ID,
@@ -217,7 +217,7 @@ func TestInsertComplexeWorkflowAndExport(t *testing.T) {
 
 	u, _ := assets.InsertAdminUser(db)
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, db, cache, key, key, u)
+	proj := assets.InsertTestProject(t, db, cache, key, key)
 
 	pip1 := sdk.Pipeline{
 		ProjectID:  proj.ID,
@@ -359,7 +359,7 @@ func TestInsertComplexeWorkflowWithBadOperator(t *testing.T) {
 
 	u, _ := assets.InsertAdminUser(db)
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, db, cache, key, key, u)
+	proj := assets.InsertTestProject(t, db, cache, key, key)
 
 	pip1 := sdk.Pipeline{
 		ProjectID:  proj.ID,
@@ -493,7 +493,7 @@ func TestUpdateSimpleWorkflowWithApplicationEnvPipelineParametersAndPayload(t *t
 	defer end()
 	u, _ := assets.InsertAdminUser(db)
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, db, cache, key, key, u)
+	proj := assets.InsertTestProject(t, db, cache, key, key)
 
 	pip := sdk.Pipeline{
 		ProjectID:  proj.ID,
@@ -629,7 +629,7 @@ func TestInsertComplexeWorkflowWithJoinsAndExport(t *testing.T) {
 	defer end()
 	u, _ := assets.InsertAdminUser(db)
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, db, cache, key, key, u)
+	proj := assets.InsertTestProject(t, db, cache, key, key)
 
 	pip1 := sdk.Pipeline{
 		ProjectID:  proj.ID,
@@ -847,7 +847,7 @@ func TestInsertComplexeWorkflowWithComplexeJoins(t *testing.T) {
 	defer end()
 	u, _ := assets.InsertAdminUser(db)
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, db, cache, key, key, u)
+	proj := assets.InsertTestProject(t, db, cache, key, key)
 
 	pip1 := sdk.Pipeline{
 		ProjectID:  proj.ID,
@@ -1117,7 +1117,7 @@ func TestUpdateWorkflowWithJoins(t *testing.T) {
 	defer end()
 	u, _ := assets.InsertAdminUser(db)
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, db, cache, key, key, u)
+	proj := assets.InsertTestProject(t, db, cache, key, key)
 
 	pip := sdk.Pipeline{
 		ProjectID:  proj.ID,
@@ -1321,7 +1321,7 @@ func TestInsertSimpleWorkflowWithHookAndExport(t *testing.T) {
 	u, _ := assets.InsertAdminUser(db)
 
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, db, cache, key, key, u)
+	proj := assets.InsertTestProject(t, db, cache, key, key)
 
 	pip := sdk.Pipeline{
 		ProjectID:  proj.ID,
@@ -1512,7 +1512,7 @@ func TestInsertAndDeleteMultiHook(t *testing.T) {
 
 	// Create project
 	key := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, db, cache, key, key, u)
+	proj := assets.InsertTestProject(t, db, cache, key, key)
 	assert.NoError(t, repositoriesmanager.InsertForProject(db, proj, &sdk.ProjectVCSServer{
 		Name: "github",
 		Data: map[string]string{

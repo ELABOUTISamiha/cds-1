@@ -37,10 +37,13 @@ import (
 	"github.com/ovh/cds/sdk/log"
 )
 
-// InsertTestProject create a test project
-func InsertTestProject(t *testing.T, db *gorp.DbMap, store cache.Store, key, name string, u *sdk.AuthentifiedUser) *sdk.Project {
-
-	oldProj, _ := project.Load(db, store, key, project.LoadOptions.WithApplications, project.LoadOptions.WithPipelines, project.LoadOptions.WithWorkflows)
+// InsertTestProject create a test project.
+func InsertTestProject(t *testing.T, db *gorp.DbMap, store cache.Store, key, name string) *sdk.Project {
+	oldProj, _ := project.Load(db, store, key,
+		project.LoadOptions.WithApplications,
+		project.LoadOptions.WithPipelines,
+		project.LoadOptions.WithWorkflows,
+	)
 	if oldProj != nil {
 		for _, w := range oldProj.Workflows {
 			require.NoError(t, workflow.Delete(context.TODO(), db, store, oldProj, &w))
@@ -54,31 +57,19 @@ func InsertTestProject(t *testing.T, db *gorp.DbMap, store cache.Store, key, nam
 		require.NoError(t, project.Delete(db, store, key))
 	}
 
-	proj := sdk.Project{
-		Key:  key,
-		Name: name,
-	}
+	proj := sdk.Project{Key: key, Name: name}
 
 	g := InsertTestGroup(t, db, name+"-group")
 
-	if err := project.Insert(db, store, &proj); err != nil {
-		t.Fatalf("Cannot insert project : %s", err)
-		return nil
-	}
+	require.NoError(t, project.Insert(db, store, &proj))
 
-	if err := group.InsertLinkGroupProject(db, &group.LinkGroupProject{
+	require.NoError(t, group.InsertLinkGroupProject(db, &group.LinkGroupProject{
 		GroupID:   g.ID,
 		ProjectID: proj.ID,
 		Role:      sdk.PermissionReadWriteExecute,
-	}); err != nil {
-		t.Fatalf("Cannot insert permission : %s", err)
-		return nil
-	}
+	}))
 
-	if err := group.LoadGroupByProject(db, &proj); err != nil {
-		t.Fatalf("Cannot load permission : %s", err)
-		return nil
-	}
+	require.NoError(t, group.LoadGroupByProject(db, &proj))
 
 	return &proj
 }

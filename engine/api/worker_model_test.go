@@ -190,7 +190,7 @@ func Test_WorkerModelUsage(t *testing.T) {
 	test.NoError(t, workermodel.Insert(db, &model))
 
 	pkey := sdk.RandomString(10)
-	proj := assets.InsertTestProject(t, db, api.Cache, pkey, pkey, u)
+	proj := assets.InsertTestProject(t, db, api.Cache, pkey, pkey)
 	require.NoError(t, group.InsertLinkGroupUser(db, &group.LinkGroupUser{
 		GroupID: proj.ProjectGroups[0].Group.ID,
 		UserID:  u.OldUserStruct.ID,

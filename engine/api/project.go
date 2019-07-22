@@ -450,8 +450,8 @@ func (api *API) postProjectHandler() service.Handler {
 				return sdk.NewErrorFrom(sdk.ErrWrongRequest, "cannot use default group to create project")
 			}
 
-			// consumer shoudl be group member to add it on a project
-			if !isGroupMember(ctx, grp) {
+			// consumer should be group member to add it on a project
+			if !isGroupMember(ctx, grp) && !isAdmin(ctx) {
 				return sdk.WithStack(sdk.ErrInvalidGroupMember)
 			}
 

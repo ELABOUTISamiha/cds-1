@@ -76,7 +76,7 @@ func TestAPI_checkProjectPermissions(t *testing.T) {
 	g := assets.InsertGroup(t, api.mustDB())
 	authUser, _ := assets.InsertLambdaUser(api.mustDB(), g)
 
-	p := assets.InsertTestProject(t, api.mustDB(), api.Cache, sdk.RandomString(10), sdk.RandomString(10), authUser)
+	p := assets.InsertTestProject(t, api.mustDB(), api.Cache, sdk.RandomString(10), sdk.RandomString(10))
 
 	require.NoError(t, group.InsertLinkGroupUser(api.mustDB(), &group.LinkGroupUser{
 		GroupID: p.ProjectGroups[0].Group.ID,
@@ -493,7 +493,7 @@ func Test_checkWorkflowPermissionsByUser(t *testing.T) {
 			usr, _ = assets.InsertLambdaUser(api.mustDB(), groups...)
 		}
 
-		proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, tt.args.pKey, tt.args.pKey, nil)
+		proj := assets.InsertTestProject(t, api.mustDB(), api.Cache, tt.args.pKey, tt.args.pKey)
 		wrkflw := assets.InsertTestWorkflow(t, api.mustDB(), api.Cache, proj, tt.args.wName)
 
 		for groupName, permLevel := range tt.setup.ProjGroupPermissions {
