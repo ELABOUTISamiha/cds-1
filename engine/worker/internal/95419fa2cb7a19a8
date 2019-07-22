@@ -1,0 +1,5 @@
+set -ex
+sleep 10
+echo my password should not be displayed here: my very sensitive data
+echo $CDS_EXPORT_PORT
+worker export newvar newval

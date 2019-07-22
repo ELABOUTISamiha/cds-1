@@ -187,7 +187,7 @@ vcs_ssh_key: proj-blabla
 `
 	var eapp = new(exportentities.Application)
 	assert.NoError(t, yaml.Unmarshal([]byte(appS), eapp))
-	app, _, globalError := application.ParseAndImport(db, cache, proj, eapp, application.ImportOptions{Force: true}, nil)
+	app, _, globalError := application.ParseAndImport(db, cache, proj, eapp, application.ImportOptions{Force: true}, nil, u)
 	assert.NoError(t, globalError)
 
 	proj, _ = project.LoadByID(db, cache, proj.ID, project.LoadOptions.WithApplications, project.LoadOptions.WithPipelines, project.LoadOptions.WithEnvironments, project.LoadOptions.WithGroups)
@@ -231,7 +231,7 @@ vcs_ssh_key: proj-blabla
 	test.NoError(t, err)
 
 	for i := 0; i < 5; i++ {
-		wr, errWR := workflow.CreateRun(db, w1, nil)
+		wr, errWR := workflow.CreateRun(db, w1, nil, u)
 		assert.NoError(t, errWR)
 		wr.Workflow = *w1
 		_, errWr := workflow.StartWorkflowRun(context.TODO(), db, cache, proj, wr, &sdk.WorkflowRunPostHandlerOption{
